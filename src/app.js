@@ -7,41 +7,44 @@ const session = require("express-session")
 const connect = require("./db/connect")
 const ApiError = require("./util/errorHandler")
 const userRoute = require("./routes/user.route.js")
-// FIXME: this is not the correct way to import the auth route
-const authRoute = require("./routes/auth.route.js")
+
 
 
 const app = express();
 require("dotenv").config()
+
+app.use(
+    session({
+        secret:process.env.SESSION_SECRET || "i_guess_env_file_is_not_working",
+        resave: false,
+        saveUninitialized: true,
+        cookie: {
+            httpOnly: true,
+            secure: false, 
+            // sameSite: "lax",
+        }
+      
+    })
+)
+
+app.use(passport.initialize())
+app.use(passport.session())
 
 // dont fuck with them , should always above your routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 // session config
-// TODO: take a look later(session sstorage , cookie)
-app.use(
-    session({
-        secret:process.env.SESSION_SECRET || "i_guess_env_file_is_not_working",
-        resave: false,
-        saveUninitialized: false,
-        cookie: {
-            httpOnly: true,
-            secure: true, 
-            // sameSite: "lax",
-        }
-      
-    })
-)
-app.use(passport.initialize())
-app.use(passport.session())
 
 require("./middleware/passport.middleware.js");
-// TODO: add route of 3rd part auth
+// TODO: add route of 3rd party auth
 
-
-app.use("/api/v1/user", authRoute)
 app.use("/api/v1/user", userRoute)
+// app.get("/test-session", (req, res) => {
+//     console.log("🔍 Session Data:", req.session);
+//     res.json({ session: req.session });
+// });
+
 const port = process.env.PORT || 4000
 
 const start = async () => {

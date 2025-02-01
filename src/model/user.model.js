@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema({
     googleId: {
         type: String,
         unique: true,
-        sparse: true, // Allow `null` or `undefined` values
+        sparse: true, 
     },
     isSocialLogin: {
         type: Boolean,
@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema({
     },
 },{timestamps:true})
 
-userSchema.pre("save", async function(next){
+userSchema.pre("save", async function(next){ 
     if(!this.isModified("password")){
         return next()
     }
