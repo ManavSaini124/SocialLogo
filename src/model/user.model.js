@@ -46,6 +46,12 @@ const userSchema = new mongoose.Schema({
         unique: true,
         sparse: true, 
     },
+    linkedinId: {
+        // could need reference from other mode where data is saved about them
+        type: String,
+        unique: true,
+        sparse: true,
+    },
     isSocialLogin: {
         type: Boolean,
         default: false, 

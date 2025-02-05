@@ -1,8 +1,11 @@
 const passport = require('passport');
 const googleStrategy = require('passport-google-oauth20').Strategy;
+const linkedinStrategy = require('passport-linkedin-oauth2').Strategy;
 const ApiError = require('../util/errorHandler.js');
 const asyncHandler = require('../util/asyncHandler.js');
-const { handleSocialLogin } = require('../controller/socialAuth.controller.js');
+const { googleHandleSocialLogin ,
+        linkedInHandleSocialLogin
+      } = require('../controller/socialAuth.controller.js');
 
 passport.serializeUser((user, done) => {
   console.log("Serializing User:", user);
@@ -24,6 +27,7 @@ passport.deserializeUser(async (_id, done) => {
     }
 });
 
+// google strategy
 passport.use(
     new googleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
@@ -34,7 +38,10 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
         try {
           // console.log("Google Profile:", profile);
-          const user = await handleSocialLogin(profile);
+          console.log("Google Access Token:=> ", accessToken);
+          console.log("Google Refresh Token:=> ", refreshToken);
+  
+          const user = await googleHandleSocialLogin(profile);
           // console.log("✅ User After handleSocialLogin:", user);
           done(null, user);
         } catch (err) {
@@ -43,6 +50,41 @@ passport.use(
         }
     }) 
 )
+
+// linkedin strategy
+passport.use(
+  new linkedinStrategy({
+    clientID: process.env.LINKEDIN_CLIENT_ID,
+    clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
+    callbackURL: process.env.LINKEDIN_REDIRECT_URI,
+    // TODO: Add the post scope for linkedin(w_member_social)
+    // scope: ['r_emailaddress', 'r_liteprofile'],
+    scope: ['openid', 'profile', 'email'],
+    
+  },
+  async(accessToken, refreshToken, profile, done) => {
+    try{
+      console.log("LinkedIn Profile:", profile);
+      console.log("LinkedIn Access Token:=> ", accessToken);
+      // req.session.accessToken = accessToken;
+
+
+      const user = await linkedInHandleSocialLogin(profile);
+      console.log("✅ User After handleSocialLogin => ",user );
+      //no error , return user
+      done(null , user)
+
+
+    }catch(err){
+      console.error("Error in linkedin strategy:", err.message);
+      done(err, null);
+    }
+  }
+  )
+)
+// passport._strategy('linkedin').on('error', (err) => {
+//   console.error("🔴 Passport Internal Error:", err);
+// });
 
 module.exports = passport;
   

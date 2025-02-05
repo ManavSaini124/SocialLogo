@@ -7,6 +7,7 @@ const session = require("express-session")
 const connect = require("./db/connect")
 const ApiError = require("./util/errorHandler")
 const userRoute = require("./routes/user.route.js")
+const authRoute = require("./routes/auth.route.js")
 
 
 
@@ -40,6 +41,13 @@ require("./middleware/passport.middleware.js");
 // TODO: add route of 3rd party auth
 
 app.use("/api/v1/user", userRoute)
+app.use("/api/v1/user", authRoute)
+
+app.use((err, req, res, next) => {
+    console.error("🚨 Uncaught Error:", err.stack);
+    res.status(500).json({ message: "Internal Server Error", error: err.message });
+  });
+  
 // app.get("/test-session", (req, res) => {
 //     console.log("🔍 Session Data:", req.session);
 //     res.json({ session: req.session });
